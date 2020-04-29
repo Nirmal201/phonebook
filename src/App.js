@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Footer from "./components/Footer";
+import Notification from "./components/Notification";
+import Success from "./components/Success";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [filterName, setFilterName] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const api = "http://localhost:3001/persons";
 
@@ -57,9 +62,17 @@ const App = () => {
             setPhoneNumber("");
           })
           .catch((e) => console.log(e));
+
+        setSuccessMessage(`Added - "${newPerson.name}"`);
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
       }
     } else {
-      alert("Field cannot be empty");
+      setErrorMessage("Fields cannot be empty.");
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 3000);
     }
   };
 
@@ -84,7 +97,14 @@ const App = () => {
     if (confirm === true) {
       axios
         .delete(`http://localhost:3001/persons/${person.id}`)
-        .catch((e) => console.log(e));
+        .catch((e) =>
+          setErrorMessage(
+            `Information of "${person.name}" has already been removed from server.`
+          )
+        );
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
       const newPerson = persons.filter((p) => p.id !== person.id);
       setPersons(newPerson);
     }
@@ -93,6 +113,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage} />
+      <Success success={successMessage} />
       filter shown with name :{" "}
       <input value={filterName} onChange={handleFilter} />
       <hr />
@@ -118,6 +140,7 @@ const App = () => {
           <button onClick={() => handleDelete(person)}>delete</button>
         </div>
       ))}
+      <Footer />
     </div>
   );
 };
